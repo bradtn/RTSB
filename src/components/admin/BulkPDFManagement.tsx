@@ -384,13 +384,13 @@ export default function BulkPDFManagement({ locale, t }: BulkPDFManagementProps)
 
   const getSelectedOperationInfo = () => {
     if (selectedOperation === 'all') {
-      const totalLines = operations?.reduce((sum, op) => sum + op._count.bidLines, 0) || 0;
+      const totalLines = operations?.reduce((sum: number, op: any) => sum + op._count.bidLines, 0) || 0;
       return { name: 'All Operations', count: totalLines };
     } else {
-      const operation = operations?.find(op => op.id === selectedOperation);
-      return { 
-        name: operation?.name || 'Unknown', 
-        count: operation?._count.bidLines || 0 
+      const operation = operations?.find((op: any) => op.id === selectedOperation);
+      return {
+        name: operation?.name || 'Unknown',
+        count: operation?._count.bidLines || 0
       };
     }
   };
@@ -440,7 +440,7 @@ export default function BulkPDFManagement({ locale, t }: BulkPDFManagementProps)
                 className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50"
               >
                 <option value="all">All Operations</option>
-                {operations?.map((operation) => (
+                {operations?.map((operation: any) => (
                   <option key={operation.id} value={operation.id}>
                     {operation.name} ({operation._count.bidLines} lines)
                   </option>

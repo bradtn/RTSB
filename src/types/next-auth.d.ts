@@ -2,15 +2,16 @@ import { DefaultSession, DefaultUser } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 
 declare module 'next-auth' {
-  interface Session {
+  interface Session extends DefaultSession {
     user: {
       id: string;
       email: string;
       role: string;
       language: string;
       mustChangePassword?: boolean;
+      mustResetPassword?: boolean; // Alias for compatibility
       badgeNumber?: string;
-      phoneNumber?: string;
+      phoneNumber?: string | null;
       emailNotifications?: boolean;
       smsNotifications?: boolean;
       notificationLanguage?: string;
@@ -25,7 +26,9 @@ declare module 'next-auth' {
           nameFr: string;
         };
       }>;
-    } & DefaultSession['user'];
+      name?: string | null;
+      image?: string | null;
+    };
   }
 
   interface User extends DefaultUser {

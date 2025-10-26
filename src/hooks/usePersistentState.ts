@@ -16,7 +16,8 @@ export function usePersistentState<T>(
   const { storageKey, debounceMs = 500 } = options;
   const [state, setState] = useState<T>(initialValue);
   const [isInitialized, setIsInitialized] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
 
   // Load saved state on mount (client-side only)
   useEffect(() => {
@@ -80,8 +81,8 @@ export function usePersistentState<T>(
  * Hook to persist scroll position
  */
 export function useScrollPersistence(storageKey: string = 'bidlines-scroll-position', isContentReady: boolean = true) {
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
-  const restoreTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const restoreTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const [hasRestored, setHasRestored] = useState(false);
 

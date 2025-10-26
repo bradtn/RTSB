@@ -93,7 +93,7 @@ export function BidLinePDFContent({ bidLine, translations, locale }: BidLinePDFC
             const dayInCycle = (daysSinceStart % cycleDays) + 1;
             
             // Look for the shift on this day of the cycle
-            const shift = bidLine.scheduleShifts?.find(s => s.dayNumber === dayInCycle);
+            const shift = bidLine.scheduleShifts?.find((s: any) => s.dayNumber === dayInCycle);
             
             if (shift?.shiftCode) {
               working.push({
