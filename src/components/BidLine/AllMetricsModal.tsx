@@ -640,7 +640,7 @@ export default function AllMetricsModal({
                                   <span className="font-medium">{details.beginTime} - {details.endTime}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                  <span className="text-xs text-gray-600 dark:text-amber-200">{translations.duration || 'Durée'}:</span>
+                                  <span className="text-xs text-gray-600 dark:text-amber-200">{'Durée'}:</span>
                                   <span className="font-medium text-amber-600 dark:text-orange-300">
                                     {details.hoursLength}h
                                   </span>
@@ -722,13 +722,13 @@ export default function AllMetricsModal({
               <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {/* Always show longest/shortest off stretches like holidays */}
                 <MetricCard
-                  title={translations.longestOff || translations.longestOffStretch || 'Congé Max'}
+                  title={translations.longestOff || 'Congé Max'}
                   value={`${metrics.longestOffStretch} jours`}
                   icon={TrendingUp}
                   color="emerald"
                 />
                 <MetricCard
-                  title={translations.shortestOff || translations.shortestOffStretch || 'Congé Min'}
+                  title={translations.shortestOff || 'Congé Min'}
                   value={`${metrics.shortestOffStretch} jours`}
                   icon={Clock}
                   color="amber"
