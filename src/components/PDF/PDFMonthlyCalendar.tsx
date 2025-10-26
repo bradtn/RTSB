@@ -320,13 +320,13 @@ export default function PDFMonthlyCalendar({
           {/* Month-specific Holidays at Bottom */}
           {(() => {
             // Get holidays for this specific month
-            const monthHolidays = monthData.weeks.flatMap(week => 
-              week.filter(day => day && day.isHoliday).map(day => ({
+            const monthHolidays = monthData.weeks.flatMap(week =>
+              week.filter((day): day is NonNullable<typeof day> => day !== null && day.isHoliday).map(day => ({
                 ...day,
                 holidayName: day.holiday || '',
                 isWorking: day.shift?.shiftCode ? true : false,
                 shiftCode: day.shift?.shiftCode?.code || '',
-                shiftTime: day.shift?.shiftCode ? 
+                shiftTime: day.shift?.shiftCode ?
                   `${day.shift.shiftCode.beginTime?.slice(0,5) || ''}-${day.shift.shiftCode.endTime?.slice(0,5) || ''}` : ''
               }))
             );
@@ -349,7 +349,7 @@ export default function PDFMonthlyCalendar({
                         {workingHolidays.map((holiday, idx) => (
                           <div key={idx} className="text-xs">
                             <span className="font-medium text-red-900">
-                              {formatDate(holiday.date, 'MMM d', locale)} - {holiday.holidayName}
+                              {holiday.date ? formatDate(holiday.date, 'MMM d', locale) : ''} - {holiday.holidayName}
                             </span>
                             <span className="text-red-700 ml-2">
                               {holiday.shiftCode} {holiday.shiftTime}
@@ -368,7 +368,7 @@ export default function PDFMonthlyCalendar({
                         {offHolidays.map((holiday, idx) => (
                           <div key={idx} className="text-xs">
                             <span className="font-medium text-green-900">
-                              {formatDate(holiday.date, 'MMM d', locale)} - {holiday.holidayName}
+                              {holiday.date ? formatDate(holiday.date, 'MMM d', locale) : ''} - {holiday.holidayName}
                             </span>
                           </div>
                         ))}

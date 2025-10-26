@@ -360,10 +360,10 @@ export default function BidLineCard({ bidLine, translations, onFavoriteToggle, o
               openAllMetricsModal();
             }}
             className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-2 px-6 rounded font-medium transition-all duration-200 hover:scale-105 hover:shadow-md transform"
-            title={translations.viewAllMetrics || 'View All Metrics'}
+            title={'View All Metrics'}
           >
             <BarChart3 size={16} />
-            <span className="text-sm">{translations.viewAllMetrics || 'View All Metrics'}</span>
+            <span className="text-sm">View All Metrics</span>
           </button>
         </div>
       )}

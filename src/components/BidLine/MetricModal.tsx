@@ -442,14 +442,14 @@ export default function MetricModal({
       explanation: translations.singleDaysExplanation || 'Individual work days surrounded by days off. These can be good for part-time schedules but may involve more transitions.',
     },
     totalSaturdays: {
-      title: translations.totalSaturdaysTitle || 'Total Saturdays',
+      title: 'Total Saturdays',
       icon: Calendar,
       color: 'violet',
       description: translations.totalSaturdaysDescription || `Saturdays worked out of total Saturdays in ${periodDescription}`,
       explanation: translations.totalSaturdaysExplanation || 'This shows how many Saturdays you work compared to the total number of Saturdays in the schedule period.',
     },
     totalSundays: {
-      title: translations.totalSundaysTitle || 'Total Sundays',
+      title: 'Total Sundays',
       icon: Calendar,
       color: 'fuchsia',
       description: translations.totalSundaysDescription || `Sundays worked out of total Sundays in ${periodDescription}`,
@@ -681,7 +681,7 @@ export default function MetricModal({
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {translations.bidLineNumber || 'Bid Line'} {bidLine.lineNumber}
+                  Bid Line {bidLine.lineNumber}
                 </span>
                 {bidLine.operation && (
                   <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
@@ -691,7 +691,7 @@ export default function MetricModal({
               </div>
               <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {metricType === 'weekends' && totalWeekendsInPeriod 
-                  ? `${metricValue} ${translations.of || 'of'} ${totalWeekendsInPeriod}`
+                  ? `${metricValue} of ${totalWeekendsInPeriod}`
                   : metricType === 'holidays' || metricType === 'totalSaturdays' || metricType === 'totalSundays' || metricType === 'totalMondays' || metricType === 'totalTuesdays' || metricType === 'totalWednesdays' || metricType === 'totalThursdays' || metricType === 'totalFridays' || metricType === 'totalDays'
                   ? metricValue // metricValue is already in "X of Y" format for these metrics
                   : metricValue
