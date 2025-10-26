@@ -390,7 +390,7 @@ export default function ShiftCodesManagement() {
     link.click();
     document.body.removeChild(link);
     
-    toast.success(t('admin.exportedShiftCodes', { count: filteredAndSortedShiftCodes.length }));
+    toast.success(t('admin.exportedShiftCodes', { count: String(filteredAndSortedShiftCodes.length) }));
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -442,13 +442,13 @@ export default function ShiftCodesManagement() {
           };
 
           if (!shiftCode.code || !shiftCode.category) {
-            errors.push(t('admin.rowError', { row: i + 1, message: t('admin.codeAndCategoryRequired') }));
+            errors.push(t('admin.rowError', { row: String(i + 1), message: t('admin.codeAndCategoryRequired') }));
             continue;
           }
 
           shiftCodesToImport.push(shiftCode);
         } catch (error) {
-          errors.push(t('admin.rowError', { row: i + 1, message: error }));
+          errors.push(t('admin.rowError', { row: String(i + 1), message: String(error) }));
         }
       }
 
@@ -612,7 +612,7 @@ export default function ShiftCodesManagement() {
                       <li key={idx}>{error}</li>
                     ))}
                     {importResult.details.errors.length > 5 && (
-                      <li>{t('admin.andMore', { count: importResult.details.errors.length - 5 })}</li>
+                      <li>{t('admin.andMore', { count: String(importResult.details.errors.length - 5) })}</li>
                     )}
                   </ul>
                 </div>
@@ -660,10 +660,10 @@ export default function ShiftCodesManagement() {
         </div>
         <div className="mt-2 flex items-center justify-between">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {t('admin.showingResults', { showing: paginatedShiftCodes.length, total: totalItems })}
+            {t('admin.showingResults', { showing: String(paginatedShiftCodes.length), total: String(totalItems) })}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-500">
-            {t('admin.itemsPerPage', { count: itemsPerPage })}
+            {t('admin.itemsPerPage', { count: String(itemsPerPage) })}
           </p>
         </div>
       </div>

@@ -655,7 +655,7 @@ export default function ScheduleManagement() {
                 {t('scheduleManagement.issuesTitle') || 'Schedules with Missing Shift Code Configuration'}
               </h3>
               <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                {t('scheduleManagement.issuesDescription', { count: schedulesWithIssues.length }) || 
+                {t('scheduleManagement.issuesDescription', { count: String(schedulesWithIssues.length) }) || 
                  `${schedulesWithIssues.length} schedule(s) contain shift codes that need configuration.`}
               </p>
             </div>
@@ -682,12 +682,12 @@ export default function ScheduleManagement() {
               <div className="flex justify-between items-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('scheduleManagement.showingResults', { 
-                    total: filteredAndSortedSchedules.length, 
-                    originalTotal: schedules.length 
+                    total: String(filteredAndSortedSchedules.length),
+                    originalTotal: String(schedules.length) 
                   }) || `Showing ${filteredAndSortedSchedules.length} of ${schedules.length} schedules`}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-500">
-                  {t('scheduleManagement.itemsPerPage', { count: itemsPerPage }) || `${itemsPerPage} items per page`}
+                  {t('scheduleManagement.itemsPerPage', { count: String(itemsPerPage) }) || `${itemsPerPage} items per page`}
                 </p>
               </div>
             </div>
@@ -796,10 +796,10 @@ export default function ScheduleManagement() {
                             return (
                               <div>
                                 <div className="font-medium">
-                                  {t('scheduleManagement.workDays', { count: workDays }) || `${workDays} work days`}
+                                  {t('scheduleManagement.workDays', { count: String(workDays) }) || `${workDays} work days`}
                                 </div>
                                 <div className="text-xs text-gray-400">
-                                  {t('scheduleManagement.totalDays', { current: totalDays, max: 56 }) || `${totalDays} / 56 total`}
+                                  {t('scheduleManagement.totalDays', { current: String(totalDays), max: '56' }) || `${totalDays} / 56 total`}
                                 </div>
                               </div>
                             );
