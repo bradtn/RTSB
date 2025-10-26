@@ -1,0 +1,256 @@
+# Shift Calendar Component - Technical Reference Guide
+
+## Overview
+
+This document provides a comprehensive guide to the refactored ShiftCalendar system. The original monolithic implementation (~1,000 lines) has been restructured into a modular, maintainable architecture while preserving the same functionality.
+
+## Directory Structure
+
+```
+src/components/schedules/detail/
+├── ShiftCalendar.tsx        - Main component (coordinator)
+├── types.ts                 - Type definitions
+├── index.ts                 - Re-export file
+├── components/
+│   ├── index.ts               - Components barrel file
+│   ├── MonthCalendar.tsx      - Monthly calendar grid
+│   ├── ShiftLegend.tsx        - Color legend component
+│   ├── HolidayDetails.tsx     - Holiday information display
+│   ├── PrintShiftTable.tsx    - Print-specific table
+│   ├── PrintHeader.tsx        - Print-specific header
+│   └── StatCards.tsx          - Summary statistics cards
+└── utils/
+    ├── index.ts               - Utils barrel file
+    ├── colorUtils.ts          - Color management functions
+    ├── dateUtils.ts           - Date handling utilities
+    ├── holidayUtils.ts        - Holiday data fetching/processing
+    ├── shiftUtils.ts          - Shift categorization & formatting
+    └── shiftProcessing.ts     - Schedule data processing
+```
+
+## Main Component
+
+### ShiftCalendar.tsx
+
+**Purpose**: Acts as the coordinator component that composes all the pieces together.
+
+**Key Responsibilities**:
+- Maintains state (calendarData, calculatedStats, holidayData)
+- Fetches and processes schedule data
+- Coordinates child components
+- Handles print functionality
+
+**State Management**:
+```typescript
+const [calendarData, setCalendarData] = useState<CalendarData>({...});
+const [calculatedStats, setCalculatedStats] = useState<CalculatedStats>({...});
+const [holidayData, setHolidayData] = useState<HolidayData>({...});
+```
+
+**Data Flow**:
+1. Component receives schedule, selectedShiftCodes, shiftCodes props
+2. useEffect processes schedule data via processScheduleData utility
+3. Another effect fetches holiday information via fetchHolidayData
+4. Processed data flows down to child components via props
+
+**Key JSX Sections**:
+- Header with score display
+- Summary stat cards
+- Color legend
+- Visualizations grid (chart + holiday details)
+- Stats grid (3-column detailed stats)
+- Monthly calendar section
+- Print button
+
+## Type Definitions
+
+### types.ts
+
+**Purpose**: Centralizes all TypeScript type definitions for the calendar system.
+
+**Key Type Definitions**:
+- `ShiftInfo`: Represents a shift definition with code, category, time, etc.
+- `ScheduleType`: Represents a schedule object from the API
+- `DayInfo`: Information about a single calendar day
+- `MonthInfo`: Information about a calendar month
+- `CalendarData`: Overall calendar data structure
+- `CalculatedStats`: Stats derived from schedule analysis
+- `HolidayData`: Holiday-related information
+- Component prop types (MonthCalendarProps, ShiftLegendProps, etc.)
+
+## Component Modules
+
+### MonthCalendar.tsx
+
+**Purpose**: Renders a single month view in the calendar.
+
+**Props**:
+- `month`: Month data with days
+- `theme`: Current theme ("dark" or "light")
+- `holidayData`: Holiday information
+
+**Key Features**:
+- Renders weekday headers
+- Creates the day grid with proper padding
+- Shows shift codes and times
+- Handles visual indicators (holidays, weekends, today)
+- Adapts for print mode
+
+### ShiftLegend.tsx
+
+**Purpose**: Provides a color legend for understanding the calendar.
+
+**Props**:
+- `theme`: Current theme
+- `calculatedStats`: Statistics for showing counts
+- `shiftStats`: Shift-specific statistics
+
+**Key Features**:
+- Displays color codes for shift types
+- Shows weekend and holiday indicators
+- Provides a print-specific version
+- Shows past/today indicators
+
+### HolidayDetails.tsx
+
+**Purpose**: Displays detailed holiday information.
+
+**Props**:
+- `theme`: Current theme
+- `holidayData`: Holiday information
+
+**Key Features**:
+- Shows total holidays worked
+- Lists individual holidays with dates
+- Shows which shifts are scheduled on holidays
+- Adapts for print mode
+
+### PrintShiftTable.tsx, PrintHeader.tsx, StatCards.tsx
+
+**Purpose**: Secondary components for specific UI sections.
+
+**Key Features**:
+- PrintShiftTable: Print-optimized shift distribution table
+- PrintHeader: Header specifically for printed reports
+- StatCards: Summary statistics in card format
+
+## Utility Modules
+
+### colorUtils.ts
+
+**Purpose**: Manages color-related functions.
+
+**Key Functions**:
+- `getShiftTypeColor`: Maps shift types to Tailwind CSS classes
+- `getChartColor`: Provides hex colors for charts
+- `getPrintColor`: Returns print-friendly colors
+
+### shiftUtils.ts
+
+**Purpose**: Handles shift-specific operations.
+
+**Key Functions**:
+- `categorizeShift`: Categorizes shifts as Days, Afternoons, etc.
+- `getShortCode`: Extracts short codes from full shift codes
+- `extractShiftTimeFromCode`: Derives time information from codes
+
+### dateUtils.ts
+
+**Purpose**: Date-related utility functions.
+
+**Key Functions**:
+- `isToday`: Checks if a date is today
+- `isPastDay`: Determines if a date is in the past
+
+### holidayUtils.ts
+
+**Purpose**: Holiday data retrieval and processing.
+
+**Key Functions**:
+- `fetchHolidayData`: Gets holiday information from API
+- `isHoliday`: Checks if a date is a holiday
+
+### shiftProcessing.ts
+
+**Purpose**: Contains the core schedule data processing logic.
+
+**Key Functions**:
+- `processScheduleData`: Transforms raw schedule data into calendar format
+  - Extracts cycle patterns
+  - Calculates statistics (weekends, work blocks)
+  - Generates month/day structures
+  - Categorizes shifts
+
+## Data Flow
+
+1. **Initialization**:
+   - ShiftCalendar receives schedule data from parent
+   - processScheduleData utility transforms raw data into calendar structure
+   - fetchHolidayData retrieves holiday information
+
+2. **Data Processing**:
+   - Schedule is analyzed to extract patterns
+   - Days are categorized by shift type
+   - Statistics are calculated (weekends, blocks, shift types)
+   - Calendar months are constructed
+
+3. **Rendering**:
+   - Processed data flows to child components
+   - Each component renders its specific UI section
+   - Theme context controls visual appearance
+
+## Key Considerations
+
+1. **Theme Handling**:
+   - All components adapt to dark/light theme via useTheme hook
+   - CSS classes change based on theme value
+   - Chart colors adapt to theme
+
+2. **Print Mode**:
+   - Special print-specific components
+   - CSS classes with print: prefix for print media queries
+   - Optimized table formats for printing
+
+3. **Performance**:
+   - Data processing happens only when schedule changes
+   - Component composition minimizes re-renders
+   - Filtration of zero-count data to reduce chart noise
+
+## How to Modify
+
+### Adding a New Shift Type
+
+1. Update the categorizeShift function in shiftUtils.ts
+2. Add a new color mapping in colorUtils.ts
+3. Update the filteredShiftTypeData array in ShiftCalendar.tsx
+
+### Changing the Calendar Layout
+
+1. Modify the MonthCalendar component
+2. Adjust CSS grid settings for different column layouts
+3. Update day cell rendering for different information display
+
+### Adding New Statistics
+
+1. Add fields to CalculatedStats type in types.ts
+2. Update the processScheduleData function to calculate new statistics
+3. Create or update components to display the new statistics
+
+## Troubleshooting
+
+**Holiday data not showing**:
+- Check the API endpoint in holidayUtils.ts
+- Verify holiday_data or holidaysData field format in schedules
+- Inspect holiday parsing logic for errors
+
+**Shift categorization issues**:
+- Check the categorizeShift function in shiftUtils.ts
+- Verify shiftCodes prop is being passed correctly
+- Consider adding new pattern matching for specialized codes
+
+**Print formatting problems**:
+- Check print-specific CSS classes
+- Review media query behavior
+- Test with different browsers' print preview
+
+This modular architecture significantly improves maintainability over the original monolithic file. Each aspect of the shift calendar now has a dedicated module with clear responsibilities, making debugging and extension much easier.

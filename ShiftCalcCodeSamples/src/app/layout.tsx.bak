@@ -1,0 +1,30 @@
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { getServerSession } from "next-auth/next";
+import SessionProvider from "@/components/SessionProvider";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+  title: "ShiftBid Calculator",
+  description: "Filter and compare shift schedules based on your preferences",
+};
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getServerSession(authOptions);
+  
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <SessionProvider session={session}>
+          {children}
+        </SessionProvider>
+      </body>
+    </html>
+  );
+}

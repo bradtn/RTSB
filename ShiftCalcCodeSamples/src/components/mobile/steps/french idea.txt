@@ -1,0 +1,280 @@
+# Guide to Adding French Language Support to ShiftBid Mobile App
+
+Based on your project structure and the code we've worked on, here's a comprehensive guide to implementing bilingual support for English and French in your ShiftBid app.
+
+## 1. Setup Translation System
+
+### Install Required Packages
+```bash
+npm install next-i18next react-i18next i18next
+```
+
+### Create Translation Files Structure
+```
+/public/
+  /locales/
+    /en/
+      common.json      # Shared translations
+      filters.json     # Filter-related translations
+      results.json     # Results-related translations
+    /fr/
+      common.json
+      filters.json
+      results.json
+```
+
+### Sample Translation File (English)
+```json
+// public/locales/en/filters.json
+{
+  "work_group": {
+    "title": "Work Group Preferences",
+    "question": "Which work groups would you prefer?",
+    "select_prompt": "Select one or more options",
+    "importance": "How important is this selection?",
+    "importance_levels": {
+      "not_important": "Not Important",
+      "somewhat_important": "Somewhat Important",
+      "important": "Important",
+      "essential": "Essential"
+    }
+  }
+}
+```
+
+### Configure Next.js for i18n
+In your `next.config.js` file:
+
+```javascript
+const { i18n } = require('./next-i18next.config');
+
+module.exports = {
+  i18n,
+  // Other Next.js config
+};
+```
+
+Create `next-i18next.config.js`:
+```javascript
+module.exports = {
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'fr'],
+    localeDetection: true,
+  },
+};
+```
+
+## 2. Add Language Switching Capability
+
+### Language Selector Component
+Create a component for switching languages:
+
+```javascript
+// src/components/LanguageSwitcher.jsx
+import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
+
+export default function LanguageSwitcher() {
+  const router = useRouter();
+  const { i18n } = useTranslation();
+  
+  const changeLanguage = (locale) => {
+    router.push(router.pathname, router.asPath, { locale });
+  };
+  
+  return (
+    <div className="flex items-center">
+      <button 
+        onClick={() => changeLanguage('en')}
+        className={`px-2 py-1 text-sm rounded-md ${i18n.language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+      >
+        EN
+      </button>
+      <button 
+        onClick={() => changeLanguage('fr')}
+        className={`px-2 py-1 text-sm rounded-md ml-1 ${i18n.language === 'fr' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+      >
+        FR
+      </button>
+    </div>
+  );
+}
+```
+
+### Add To MobileHeader
+Add it to your header component:
+
+```javascript
+import LanguageSwitcher from './LanguageSwitcher';
+
+// In your MobileHeader component
+<div className="flex items-center">
+  <LanguageSwitcher />
+  {/* Your other header elements */}
+</div>
+```
+
+## 3. Modify Components to Use Translations
+
+### Wrap App with Translation Provider
+In your `_app.js` or `_app.tsx`:
+
+```javascript
+import { appWithTranslation } from 'next-i18next';
+
+function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+
+export default appWithTranslation(MyApp);
+```
+
+### Modify Page Components for SSR
+For server-side rendering translations:
+
+```javascript
+// In your page component (e.g., src/app/page.tsx)
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ['common', 'filters'])),
+    },
+  };
+}
+```
+
+### Update Component with Translation Hook
+Example update to MobileGroupSelector:
+
+```javascript
+import { useTranslation } from 'next-i18next';
+
+export default function MobileGroupSelector({ /* props */ }) {
+  const { t } = useTranslation('filters');
+  
+  return (
+    <div className="min-h-[60vh] flex flex-col">
+      <div className={`mx-2 ${theme === 'dark' ? 'bg-blue-900/80' : 'bg-blue-100'} rounded-lg p-3 mb-3`}>
+        <h3 className={`text-base font-medium mb-1 ${theme === 'dark' ? 'text-blue-100' : 'text-blue-800'}`}>
+          {t('work_group.question')}
+        </h3>
+        <p className={`text-xs ${theme === 'dark' ? 'text-blue-200' : 'text-blue-600'}`}>
+          {t('work_group.select_prompt')}
+        </p>
+      </div>
+      
+      {/* Rest of component using t() function */}
+    </div>
+  );
+}
+```
+
+## 4. Handle Dynamic Content
+
+### Format Dates According to Locale
+```javascript
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { useTranslation } from 'next-i18next';
+
+// In component
+const { i18n } = useTranslation();
+const dateLocale = i18n.language === 'fr' ? fr : undefined;
+
+// When formatting dates
+format(date, 'PPP', { locale: dateLocale });
+```
+
+### Handle Pluralization
+```javascript
+// In translation files
+{
+  "days_selected": "{{count}} day selected",
+  "days_selected_plural": "{{count}} days selected"
+}
+
+// In component
+t('days_selected', { count: dayOffDates.length })
+```
+
+## 5. Translation Process
+
+### Options for Translation:
+
+1. **Manual Translation**:
+   - Have a French speaker translate all your JSON files
+   - Best quality but time-consuming
+
+2. **Professional Translation Service**:
+   - Many services available that can handle JSON files
+   - Good quality but costs money
+
+3. **Machine Translation + Review**:
+   - Use services like DeepL API to do initial translation
+   - Have a French speaker review and correct
+   - Balanced approach between quality and effort
+
+4. **Translation Management System**:
+   - Tools like Lokalise, Crowdin, or POEditor
+   - Manage translations, handle updates, and collaborate with translators
+   - Good for ongoing maintenance
+
+### DeepL API Example for Initial Translation
+```javascript
+// Script to generate initial French translations
+const deepl = require('deepl-node');
+const fs = require('fs');
+
+const translator = new deepl.Translator('YOUR_API_KEY');
+const englishFiles = fs.readdirSync('./public/locales/en');
+
+async function translateJsonFile(fileName) {
+  const enJson = JSON.parse(fs.readFileSync(`./public/locales/en/${fileName}`, 'utf8'));
+  const frJson = {};
+  
+  // Recursive function to translate nested objects
+  async function translateObject(obj, target) {
+    for (const key in obj) {
+      if (typeof obj[key] === 'string') {
+        const result = await translator.translateText(obj[key], 'en', 'fr');
+        target[key] = result.text;
+      } else if (typeof obj[key] === 'object') {
+        target[key] = {};
+        await translateObject(obj[key], target[key]);
+      }
+    }
+  }
+  
+  await translateObject(enJson, frJson);
+  fs.writeFileSync(`./public/locales/fr/${fileName}`, JSON.stringify(frJson, null, 2));
+}
+
+async function translateAll() {
+  for (const file of englishFiles) {
+    await translateJsonFile(file);
+  }
+}
+
+translateAll();
+```
+
+## 6. UI Adjustments for Text Expansion
+
+French text is typically 15-20% longer than English. To accommodate this:
+
+1. **Use flexible containers**: 
+   - Avoid fixed widths for text containers
+   - Use min/max width and ellipsis for overflow
+
+2. **Test with actual translations**: 
+   - Identify problematic areas early
+   - Adjust layouts where text overflows
+
+3. **Consider responsive design**: 
+   - Use different layouts for different screen sizes
+   - Stack elements vertically when horizontal space is limited
+
+This approach allows you to maintain a single codebase while supporting multiple languages, making maintenance much simpler than duplicating modules.

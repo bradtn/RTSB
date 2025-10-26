@@ -1,0 +1,206 @@
+// src/app/api/admin/backup/route.ts
+// Modified to fix the "unknown column 'updated_at'" error
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import prisma from "@/lib/db/prisma";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import * as XLSX from 'xlsx';
+
+export async function GET(request: Request) {
+  console.log("GET /api/admin/backup - Starting backup request");
+
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user?.role !== "admin") {
+      console.log("Unauthorized backup attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    console.log("Authenticated as admin, proceeding with backup");
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Fetch shift codes - Modified to check for columns
+    console.log("Fetching shift codes...");
+    // First, check what columns actually exist in the shift_codes table
+    const shiftCodesColumns = await prisma.$queryRaw`SHOW COLUMNS FROM shift_codes`;
+    const shiftCodesColumnNames = shiftCodesColumns.map(col => col.Field);
+    console.log("Available shift_codes columns:", shiftCodesColumnNames);
+    
+    // Dynamically build the query based on available columns
+    let shiftCodesQuery = "SELECT id, code as CODE, ";
+    
+    // Add time formatting for begin and end times if they exist
+    if (shiftCodesColumnNames.includes("begin")) {
+      shiftCodesQuery += "TIME_FORMAT(begin, '%H:%i') as BEGIN, ";
+    }
+    if (shiftCodesColumnNames.includes("end")) {
+      shiftCodesQuery += "TIME_FORMAT(end, '%H:%i') as END, ";
+    }
+    if (shiftCodesColumnNames.includes("description")) {
+      shiftCodesQuery += "description as DESCRIPTION, ";
+    }
+    if (shiftCodesColumnNames.includes("created_at")) {
+      shiftCodesQuery += "created_at";
+    }
+    // Only add updated_at if it exists
+    if (shiftCodesColumnNames.includes("updated_at")) {
+      if (shiftCodesColumnNames.includes("created_at")) {
+        shiftCodesQuery += ", ";
+      }
+      shiftCodesQuery += "updated_at";
+    }
+    
+    shiftCodesQuery += " FROM shift_codes";
+    
+    const shiftCodes = await prisma.$queryRaw(shiftCodesQuery);
+
+    if (Array.isArray(shiftCodes) && shiftCodes.length > 0) {
+      console.log(`Found ${shiftCodes.length} shift codes for backup`);
+
+      // Format dates for better Excel display
+      const formattedShiftCodes = shiftCodes.map(code => {
+        const result: any = {
+          id: code.id,
+          CODE: code.CODE
+        };
+        
+        if (code.BEGIN) result.BEGIN = code.BEGIN;
+        if (code.END) result.END = code.END;
+        if (code.DESCRIPTION !== undefined) result.DESCRIPTION = code.DESCRIPTION || "";
+        
+        if (code.created_at) {
+          result.created_at = new Date(code.created_at).toLocaleDateString();
+        }
+        
+        if (code.updated_at) {
+          result.updated_at = new Date(code.updated_at).toLocaleDateString();
+        }
+        
+        return result;
+      });
+
+      // Add shift codes sheet
+      const shiftCodesSheet = XLSX.utils.json_to_sheet(formattedShiftCodes);
+      XLSX.utils.book_append_sheet(workbook, shiftCodesSheet, "Shift Codes");
+    } else {
+      console.log("No shift codes found for backup");
+    }
+
+    // Similarly modify the schedules query
+    console.log("Fetching schedules...");
+    const schedulesColumns = await prisma.$queryRaw`SHOW COLUMNS FROM schedules`;
+    const schedulesColumnNames = schedulesColumns.map(col => col.Field);
+    console.log("Available schedules columns:", schedulesColumnNames);
+    
+    const schedules = await prisma.$queryRaw`
+      SELECT * FROM schedules
+    `;
+
+    if (Array.isArray(schedules) && schedules.length > 0) {
+      console.log(`Found ${schedules.length} schedules for backup`);
+
+      // Format dates for better Excel display
+      const formattedSchedules = schedules.map(schedule => {
+        const result: any = {};
+
+        // Process each field in the schedule
+        for (const [key, value] of Object.entries(schedule)) {
+          if ((key === 'created_at' || key === 'updated_at') && value) {
+            result[key] = new Date(value as any).toLocaleDateString();
+          } else {
+            result[key] = value;
+          }
+        }
+
+        return result;
+      });
+
+      // Add schedules sheet
+      const schedulesSheet = XLSX.utils.json_to_sheet(formattedSchedules);
+      XLSX.utils.book_append_sheet(workbook, schedulesSheet, "Schedules");
+    } else {
+      console.log("No schedules found for backup");
+    }
+
+    // Modify users query
+    console.log("Fetching users...");
+    const usersColumns = await prisma.$queryRaw`SHOW COLUMNS FROM users`;
+    const usersColumnNames = usersColumns.map(col => col.Field);
+    console.log("Available users columns:", usersColumnNames);
+    
+    // Build a query that only includes columns that exist
+    let usersQuery = "SELECT id";
+    if (usersColumnNames.includes("username")) usersQuery += ", username";
+    if (usersColumnNames.includes("full_name")) usersQuery += ", full_name";
+    if (usersColumnNames.includes("role")) usersQuery += ", role";
+    if (usersColumnNames.includes("created_at")) usersQuery += ", created_at";
+    if (usersColumnNames.includes("updated_at")) usersQuery += ", updated_at";
+    usersQuery += " FROM users";
+    
+    const users = await prisma.$queryRaw(usersQuery);
+
+    if (Array.isArray(users) && users.length > 0) {
+      console.log(`Found ${users.length} users for backup`);
+
+      // Format dates for better Excel display
+      const formattedUsers = users.map(user => {
+        const result: any = { id: user.id };
+        
+        if (user.username !== undefined) result.username = user.username;
+        if (user.full_name !== undefined) result.full_name = user.full_name;
+        if (user.role !== undefined) result.role = user.role;
+        
+        if (user.created_at) {
+          result.created_at = new Date(user.created_at).toLocaleDateString();
+        }
+        
+        if (user.updated_at) {
+          result.updated_at = new Date(user.updated_at).toLocaleDateString();
+        }
+        
+        return result;
+      });
+
+      // Add users sheet
+      const usersSheet = XLSX.utils.json_to_sheet(formattedUsers);
+      XLSX.utils.book_append_sheet(workbook, usersSheet, "Users");
+    } else {
+      console.log("No users found for backup");
+    }
+
+    // Generate timestamp for filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `shiftbid_backup_${timestamp}.xlsx`;
+
+    console.log(`Creating Excel file: ${filename}`);
+
+    // Convert workbook to buffer
+    const excelBuffer = XLSX.write(workbook, {
+      type: "buffer",
+      bookType: "xlsx"
+    });
+
+    // Set headers for file download
+    const headers = new Headers();
+    headers.append("Content-Disposition", `attachment; filename="${filename}"`);
+    headers.append("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    console.log("Backup complete, returning file");
+
+    return new NextResponse(excelBuffer, {
+      status: 200,
+      headers
+    });
+  } catch (error) {
+    console.error("Error creating backup:", error);
+    return NextResponse.json({
+      error: "Failed to create backup",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
+  }
+}
+

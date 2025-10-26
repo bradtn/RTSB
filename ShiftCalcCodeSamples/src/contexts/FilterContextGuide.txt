@@ -1,0 +1,290 @@
+# FilterContext Refactoring Guide
+
+## Overview
+
+This document provides a comprehensive guide to the refactored FilterContext system. The original monolithic implementation (~1,700 lines) has been restructured into a modular, maintainable architecture while preserving the same API for all existing components.
+
+## Directory Structure
+
+```
+src/contexts/filter/
+├── constants.js             - Constants and default values
+├── FilterContext.jsx        - Main context implementation
+├── index.jsx                - Entry point (re-exports)
+├── hooks/
+│   ├── index.js               - Re-exports all hooks
+│   ├── useFilterState.js      - Core state management
+│   ├── useFilterActions.js    - Filter and navigation actions
+│   ├── useFilterNavigation.js - Navigation and UI view management
+│   └── useInitializationEffects.js - Data loading and initialization
+└── utils/
+    ├── criteriaHelpers.js     - Filter criteria validation
+    ├── localStorage.js        - Local storage operations
+    └── serverSync.js          - Server synchronization queue
+```
+
+## Original File Re-export
+
+The original `src/contexts/FilterContext.jsx` still exists but now simply re-exports from the new modular implementation:
+
+```javascript
+// src/contexts/FilterContext.jsx
+export { FilterProvider, useFilter } from "./filter";
+```
+
+This ensures existing component imports continue to work without modification.
+
+## Main Components
+
+### 1. Entry Point (index.jsx)
+
+**Purpose**: Re-exports the main FilterContext components to maintain a clean API.
+
+```javascript
+// src/contexts/filter/index.jsx
+export { FilterProvider, useFilter } from "./FilterContext";
+```
+
+### 2. Constants (constants.js)
+
+**Purpose**: Centralizes all constant values and default state.
+
+**Key Exports**:
+- `DEBUG_MODE`: Toggle for verbose logging
+- `DEFAULT_CRITERIA`: Default filter criteria structure
+- `DEFAULT_SUB_MODES`: Default UI mode states
+- `DEFAULT_SUBSECTIONS`: Default navigation subsections
+- `DEFAULT_ACTIVE_VIEW`: Default view state
+- `MIN_UPDATE_INTERVAL`: Throttling for server updates
+
+### 3. Main Context Provider (FilterContext.jsx)
+
+**Purpose**: Provides the main context implementation that integrates all hooks.
+
+**Implementation Details**:
+- Creates and exports the React context
+- Uses hooks to manage state, actions, and navigation
+- Manages initialization flow
+- Composes and memoizes the context value
+- Provides context provider and consumer hook (`useFilter`)
+
+**Usage**:
+```javascript
+// How components use the context
+import { useFilter } from "@/contexts/FilterContext";
+
+function MyComponent() {
+  const { 
+    step, 
+    showingResults, 
+    nextStep, 
+    updateCriteria 
+  } = useFilter();
+  
+  // Component implementation
+}
+```
+
+## Hook Modules
+
+### 1. useFilterState.js
+
+**Purpose**: Manages all state variables for the filter system.
+
+**Key Responsibilities**:
+- Initializes state from localStorage with fallbacks
+- Provides state setters that sync with localStorage and server
+- Manages refs for tracking application state
+- Handles page state and loading indicators
+
+**Key Exports**:
+- State variables (step, criteria, subModes, etc.)
+- State setters (setStep, setCriteria, etc.)
+- Page state (isLoading, hasError, etc.)
+- Ref objects for tracking async operations
+- Helper functions for state management
+
+### 2. useFilterActions.js
+
+**Purpose**: Provides action functions for filtering and navigation.
+
+**Key Functions**:
+- `applyFilters`: Main filtering logic that scores and ranks schedules
+- `reapplyFilters`: Re-runs filtering with current criteria
+- `nextStep`/`prevStep`: Navigation between wizard steps
+- `resetFilters`: Resets all filter state to defaults
+- `backToFilters`: Returns from results to filter view
+- `updateCriteria`/`updateWeight`: Update specific criteria values
+
+**Important Implementation Details**:
+- Validates and processes filter criteria
+- Manages loading and calculation states
+- Handles navigation between steps
+- Coordinates with the server for data persistence
+
+### 3. useFilterNavigation.js
+
+**Purpose**: Manages URL hash-based navigation and UI view state.
+
+**Key Functions**:
+- `navigateToSection`: Updates URL hash for major sections
+- `navigateToSubsection`: Updates URL hash for subsections
+- UI state updaters:
+  - `onGroupViewModeChange`: Group selector view management
+  - `onDateViewModeChange`: Date picker view management
+  - `onShiftModeChange`: Shift selector UI state
+  - `onWeekendTabChange`: Weekend preferences tab management
+  - `onStretchTabChange`: Work stretch tab management
+
+**Implementation Details**:
+- Uses hash-based navigation to preserve UI state
+- Updates subMode state for different UI components
+- Tracks current subsections for deep linking
+- Manages tab and view states within each step
+
+### 4. useInitializationEffects.js
+
+**Purpose**: Coordinates the initial loading of data and application initialization.
+
+**Key Effects**:
+- Schedule fetching effect: Loads schedules from API
+- Critical initialization effect: Coordinates data readiness
+- Criteria processing effect: Validates and processes filter criteria
+- Active view effect: Updates view state based on step/mode
+
+**Implementation Details**:
+- Manages initialization sequence with fallbacks
+- Handles timeout for initialization (15s max)
+- Coordinates loading of schedules and criteria
+- Triggers filter application for results view
+- Updates page state based on loading status
+
+## Utility Modules
+
+### 1. criteriaHelpers.js
+
+**Purpose**: Provides utilities for validating and processing filter criteria.
+
+**Key Functions**:
+- `validateCriteria`: Validates and normalizes criteria structure
+- `expandShiftCategoriesAndLengths`: Expands high-level categories into specific shift codes
+
+**Usage Context**:
+- Used during filter application to ensure criteria is valid
+- Handles date normalization and numeric conversion
+- Provides consistent criteria structure for scoring algorithm
+
+### 2. localStorage.js
+
+**Purpose**: Handles local storage operations with error handling.
+
+**Key Functions**:
+- `getLocalStorageItem`: Safely retrieves and parses items from localStorage
+- `saveToLocalStorage`: Safely stringifies and saves items to localStorage
+- `clearFilterStorage`: Removes all filter-related items from localStorage
+
+**Usage Context**:
+- Used by state management to persist state between sessions
+- Provides fallbacks for missing or invalid stored data
+- Handles serialization/deserialization of complex objects
+
+### 3. serverSync.js
+
+**Purpose**: Manages synchronization of state to the server with throttling.
+
+**Key Functions**:
+- `queueServerUpdate`: Queues updates with intelligent throttling
+- Server update queue processing system
+- Timeout management for pending updates
+
+**Implementation Details**:
+- Throttles updates to prevent excessive server calls (2s minimum between updates)
+- Maintains a queue of pending updates
+- Processes updates sequentially to ensure consistency
+- Compares data to avoid sending duplicate updates
+- Cleans up timeouts on page unload
+
+## Data Flow
+
+1. **Initialization Flow**:
+   - `FilterProvider` mounts and creates initial state from localStorage
+   - `useInitializationEffects` coordinates data loading:
+     - Fetches schedules from API
+     - Validates loaded criteria
+     - Sets application as ready when both are available
+   - Applies filters if showing results view
+
+2. **State Update Flow**:
+   - Component calls an action function (e.g., `updateCriteria`)
+   - Action updates local state via state setter
+   - State setter:
+     - Updates React state
+     - Saves to localStorage
+     - Queues update to server (throttled)
+
+3. **Filter Application Flow**:
+   - User completes wizard or changes filter criteria
+   - `applyFilters` is called with current criteria
+   - Criteria is validated and processed
+   - Schedules are scored using the scoring algorithm
+   - Results are sorted and stored in state
+   - UI updates to show filtered results
+
+4. **Navigation Flow**:
+   - User navigates via next/prev buttons or direct hash link
+   - Navigation function updates step state
+   - `navigateToSection` updates URL hash
+   - Hash change triggers UI update to show correct step
+
+## Critical Dependencies
+
+1. **External Hooks**:
+   - `useHashNavigation`: (`@/hooks/useHashNavigation`) - Handles hash-based navigation
+   - `useSession`: (`next-auth/react`) - Session management
+
+2. **External Functions**:
+   - `calculateScheduleScore`: (`@/lib/scheduler/scoring`) - Core scoring algorithm
+
+## Common Debugging Points
+
+1. **Initialization Issues**:
+   - Check browser console for logs from `useInitializationEffects`
+   - Verify localStorage contents for stored preferences
+   - Check schedule loading from API endpoint
+
+2. **Filter Application Issues**:
+   - Examine `applyFilters` function logs
+   - Verify criteria structure has required fields
+   - Check for errors in the scoring calculation
+
+3. **Navigation Problems**:
+   - Look for issues with hash updates
+   - Check navigation lock ref state
+   - Verify step and showingResults state values
+
+4. **State Persistence Issues**:
+   - Check localStorage values
+   - Examine server update queue processing
+   - Verify state values in React DevTools
+
+## Extending the System
+
+### Adding a New Filter Criteria Type
+
+1. Update `DEFAULT_CRITERIA` in `constants.js`
+2. Add the field to `validateCriteria` in `criteriaHelpers.js`
+3. Update the UI component to use `updateCriteria` with the new field
+4. Modify the scoring algorithm to use the new criteria
+
+### Adding a New Navigation Section
+
+1. Update `DEFAULT_SUBSECTIONS` in `constants.js`
+2. Add a new handler in `useFilterNavigation.js`
+3. Update the navigation functions in `useFilterActions.js`
+4. Add support for the new section in the UI components
+
+## Final Notes
+
+This modular architecture significantly improves maintainability over the original monolithic file. Each aspect of the filter system now has a dedicated module with clear responsibilities, making debugging and extension much easier.
+
+The system maintains backward compatibility with existing components through careful API preservation, allowing for gradual migration and refinement as needed.
