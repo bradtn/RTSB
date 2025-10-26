@@ -68,9 +68,9 @@ async function generatePDFHandler(request: NextRequest & { user: any }) {
     // Format: Operation-Line-Number-Metrics.pdf
     const cleanOperationName = (operationName || 'Unknown').replace(/[^a-zA-Z0-9]/g, '-');
     const filename = `${cleanOperationName}-Line-${lineNumber || bidLineId}-Metrics.pdf`;
-    
+
     // Return PDF as response
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,

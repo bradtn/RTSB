@@ -32,7 +32,7 @@ interface ShiftBreakdown {
 /**
  * Calculate total weekends in a bid period
  */
-export const getTotalWeekendsInPeriod = (bidPeriod?: BidPeriod): number | null => {
+export const getTotalWeekendsInPeriod = (bidPeriod?: Pick<BidPeriod, 'numCycles' | 'startDate' | 'endDate'>): number | null => {
   if (!bidPeriod) return null;
   
   const { numCycles, startDate, endDate } = bidPeriod;

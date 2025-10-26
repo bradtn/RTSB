@@ -494,9 +494,8 @@ export default function BidLinesClient({ locale, translations }: BidLinesClientP
                                 daysFri: translations.daysFri,
                                 daysSat: translations.daysSat,
                                 daysSun: translations.daysSun,
-                                // Pass metric translations for AllMetricsModal from scheduleMetrics and metrics
+                                // Pass metric translations for AllMetricsModal from scheduleMetrics
                                 ...(translations.scheduleMetrics || {}),
-                                ...(translations.metrics || {}),
                                 // Day-off match modal translations
                                 dayOffMatch: translations.dayOffMatch,
                               }}

@@ -63,3 +63,8 @@ __tests__/
 
 # Scripts (not needed in container)
 scripts/
+
+# Sample code directories
+ShiftCalcCodeSamples/
+Schedules & Shift Codes Samples/
+Screenshot*.png

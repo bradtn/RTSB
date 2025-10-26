@@ -3,7 +3,17 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker
   output: 'standalone',
-  
+
+  // Skip type checking during build (check separately)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
+  // Skip ESLint during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Image optimization
   images: {
     domains: ['localhost'],

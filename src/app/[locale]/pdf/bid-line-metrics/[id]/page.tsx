@@ -5,10 +5,10 @@ import { getBidLineWithMetrics } from '@/lib/bidLineQueries';
 import { useTranslation } from '@/lib/i18n';
 
 interface PDFPageProps {
-  params: {
+  params: Promise<{
     locale: string;
     id: string;
-  };
+  }>;
 }
 
 export default async function BidLinePDFPage({ params }: PDFPageProps) {

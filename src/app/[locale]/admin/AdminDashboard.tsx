@@ -361,6 +361,9 @@ export default function AdminDashboardV2({ locale, translations, session }: Admi
                       commonEdit: t('common.edit'),
                       commonActive: t('common.active'),
                       commonInactive: t('common.inactive'),
+                      commonStatus: t('common.status'),
+                      changesSaved: t('common.changesSaved'),
+                      changesError: t('common.changesError'),
                     }}
                   />
                 )}

@@ -29,8 +29,7 @@ services:
     image: redis:7-alpine
     container_name: shift-bidding-redis
     restart: unless-stopped
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    # No external ports - Redis only accessed internally
     volumes:
       - redis_data:/data
     networks:
@@ -57,9 +56,9 @@ services:
       - REDIS_URL=redis://default:${REDIS_PASSWORD:-redis_password_change_in_production}@redis:6379
       - RESEND_API_KEY=${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-noreply@yourdomain.com}
-      - NEXT_PUBLIC_WEBSOCKET_URL=ws://${HOST:-localhost}:3001
+      - NEXT_PUBLIC_WEBSOCKET_URL=ws://${HOST:-localhost}:8001
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "${APP_PORT:-3004}:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -88,7 +87,7 @@ services:
       - NEXT_PUBLIC_APP_URL=${NEXTAUTH_URL:-http://localhost:3000}
       - WEBSOCKET_PORT=3001
     ports:
-      - "${WEBSOCKET_PORT:-3001}:3001"
+      - "${WEBSOCKET_PORT:-8001}:3001"
     depends_on:
       postgres:
         condition: service_healthy

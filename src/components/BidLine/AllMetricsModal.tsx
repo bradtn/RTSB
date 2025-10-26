@@ -424,7 +424,7 @@ export default function AllMetricsModal({
             </div>
             <div className="bg-white/20 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold">{totalDaysOff}</div>
-              <div className="text-sm text-blue-100">{translations.daysOff || translations.dayOff || 'Days Off'}</div>
+              <div className="text-sm text-blue-100">{translations.daysOff || 'Days Off'}</div>
             </div>
             <div className="bg-white/20 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold">{workPercentage}%</div>
@@ -463,13 +463,13 @@ export default function AllMetricsModal({
                   color="pink"
                 />
                 <MetricCard
-                  title={translations.totalSaturdays || translations.totalSaturdaysTitle || 'Total Saturdays'}
+                  title={translations.totalSaturdays || 'Total Saturdays'}
                   value={`${metrics.totalSaturdays} ${translations.of || 'of'} ${metrics.totalSaturdaysInPeriod}`}
                   icon={Calendar}
                   color="violet"
                 />
                 <MetricCard
-                  title={translations.totalSundays || translations.totalSundaysTitle || 'Total Sundays'}
+                  title={translations.totalSundays || 'Total Sundays'}
                   value={`${metrics.totalSundays} ${translations.of || 'of'} ${metrics.totalSundaysInPeriod}`}
                   icon={Calendar}
                   color="fuchsia"
@@ -491,31 +491,31 @@ export default function AllMetricsModal({
               </h3>
               <div className="flex flex-wrap justify-center gap-3">
                 <MetricCard
-                  title={translations.totalMondays || translations.totalMondaysTitle || 'Mondays'}
+                  title={translations.totalMondays || 'Mondays'}
                   value={`${metrics.totalMondays} ${translations.of || 'of'} ${metrics.totalMondaysInPeriod}`}
                   icon={Calendar}
                   color="blue"
                 />
                 <MetricCard
-                  title={translations.totalTuesdays || translations.totalTuesdaysTitle || 'Tuesdays'}
+                  title={translations.totalTuesdays || 'Tuesdays'}
                   value={`${metrics.totalTuesdays} ${translations.of || 'of'} ${metrics.totalTuesdaysInPeriod}`}
                   icon={Calendar}
                   color="green"
                 />
                 <MetricCard
-                  title={translations.totalWednesdays || translations.totalWednesdaysTitle || 'Wednesdays'}
+                  title={translations.totalWednesdays || 'Wednesdays'}
                   value={`${metrics.totalWednesdays} ${translations.of || 'of'} ${metrics.totalWednesdaysInPeriod}`}
                   icon={Calendar}
                   color="yellow"
                 />
                 <MetricCard
-                  title={translations.totalThursdays || translations.totalThursdaysTitle || 'Thursdays'}
+                  title={translations.totalThursdays || 'Thursdays'}
                   value={`${metrics.totalThursdays} ${translations.of || 'of'} ${metrics.totalThursdaysInPeriod}`}
                   icon={Calendar}
                   color="red"
                 />
                 <MetricCard
-                  title={translations.totalFridays || translations.totalFridaysTitle || 'Fridays'}
+                  title={translations.totalFridays || 'Fridays'}
                   value={`${metrics.totalFridays} ${translations.of || 'of'} ${metrics.totalFridaysInPeriod}`}
                   icon={Calendar}
                   color="purple"
@@ -589,7 +589,7 @@ export default function AllMetricsModal({
               <div className="flex flex-wrap justify-center gap-4 mt-4">
                 <MetricCard
                   title={translations.longestStretch || 'Max Jours'}
-                  value={`${metrics.longestStretch} ${translations.days || 'jours'}`}
+                  value={`${metrics.longestStretch} jours`}
                   icon={TrendingUp}
                   color="stone"
                 />
@@ -636,7 +636,7 @@ export default function AllMetricsModal({
                               </div>
                               <div className="text-sm text-gray-700 dark:text-amber-100 space-y-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-xs text-gray-600 dark:text-amber-200">{translations.time || 'Temps'}:</span>
+                                  <span className="text-xs text-gray-600 dark:text-amber-200">Temps:</span>
                                   <span className="font-medium">{details.beginTime} - {details.endTime}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -723,13 +723,13 @@ export default function AllMetricsModal({
                 {/* Always show longest/shortest off stretches like holidays */}
                 <MetricCard
                   title={translations.longestOff || translations.longestOffStretch || 'Congé Max'}
-                  value={`${metrics.longestOffStretch} ${translations.days || 'jours'}`}
+                  value={`${metrics.longestOffStretch} jours`}
                   icon={TrendingUp}
                   color="emerald"
                 />
                 <MetricCard
                   title={translations.shortestOff || translations.shortestOffStretch || 'Congé Min'}
-                  value={`${metrics.shortestOffStretch} ${translations.days || 'jours'}`}
+                  value={`${metrics.shortestOffStretch} jours`}
                   icon={Clock}
                   color="amber"
                 />
