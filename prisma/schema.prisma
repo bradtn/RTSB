@@ -1,0 +1,449 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String          @id @default(cuid())
+  email                String          @unique
+  password             String
+  firstName            String
+  lastName             String
+  badgeNumber          String?         @unique
+  role                 Role            @default(OFFICER)
+  language             Language        @default(EN)
+  emailVerified        DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  emailNotifications   Boolean         @default(true)
+  mustChangePassword   Boolean         @default(false)
+  notificationLanguage Language?       @default(EN)
+  phoneNumber          String?
+  smsNotifications     Boolean         @default(false)
+  accounts             Account[]
+  activityLogs         ActivityLog[]
+  bidHistory           BidHistory[]
+  dayOffRequest        DayOffRequest?
+  favoritedLines       FavoriteLine[]
+  notifications        Notification[]
+  operations           OperationUser[]
+  seniorityEntry       SeniorityList?
+  sessions             Session[]
+}
+
+model Operation {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  nameEn      String
+  nameFr      String
+  description String?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  bidLines    BidLine[]
+  users       OperationUser[]
+  schedules   Schedule[]
+}
+
+model OperationUser {
+  id           String    @id @default(cuid())
+  userId       String
+  operationId  String
+  isSupervisor Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  operation    Operation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, operationId])
+}
+
+model BidLine {
+  id                      String         @id @default(cuid())
+  operationId             String
+  lineNumber              String
+  shiftStart              DateTime?
+  shiftEnd                DateTime?
+  daysOfWeek              String[]
+  location                String?
+  description             String?
+  status                  LineStatus     @default(AVAILABLE)
+  takenBy                 String?
+  takenAt                 DateTime?
+  notes                   String?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  bidPeriodId             String?
+  scheduleId              String?
+  blocks2day              Int?
+  blocks3day              Int?
+  blocks4day              Int?
+  blocks5day              Int?
+  blocks6day              Int?
+  fridayWeekendBlocks     Int?
+  holidaysOff             Int?
+  holidaysWorking         Int?
+  longestStretch          Int?
+  saturdaysOn             Int?
+  shiftPattern            String?
+  singleDays              Int?
+  sundaysOn               Int?
+  totalDaysInPeriod       Int?
+  totalDaysWorked         Int?
+  totalFridays            Int?
+  totalFridaysInPeriod    Int?
+  totalMondays            Int?
+  totalMondaysInPeriod    Int?
+  totalSaturdays          Int?
+  totalSaturdaysInPeriod  Int?
+  totalSundays            Int?
+  totalSundaysInPeriod    Int?
+  totalThursdays          Int?
+  totalThursdaysInPeriod  Int?
+  totalTuesdays           Int?
+  totalTuesdaysInPeriod   Int?
+  totalWednesdays         Int?
+  totalWednesdaysInPeriod Int?
+  weekdayBlocks           Int?
+  weekendsOn              Int?
+  offBlocks2day           Int?
+  offBlocks3day           Int?
+  offBlocks4day           Int?
+  offBlocks5day           Int?
+  offBlocks6day           Int?
+  offBlocks7dayPlus       Int?
+  longestOffStretch       Int?
+  shortestOffStretch      Int?
+  activityLogs            ActivityLog[]
+  bidHistory              BidHistory[]
+  bidPeriod               BidPeriod?     @relation(fields: [bidPeriodId], references: [id])
+  operation               Operation      @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  schedule                Schedule?      @relation(fields: [scheduleId], references: [id])
+  favorites               FavoriteLine[]
+
+  @@unique([operationId, lineNumber])
+  @@index([status])
+  @@index([operationId])
+  @@index([bidPeriodId])
+}
+
+model FavoriteLine {
+  id        String   @id @default(cuid())
+  userId    String
+  bidLineId String
+  tags      String[]
+  notes     String?
+  createdAt DateTime @default(now())
+  rank      Int?
+  bidLine   BidLine  @relation(fields: [bidLineId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bidLineId])
+}
+
+model BidHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  bidLineId String
+  action    String
+  details   Json?
+  timestamp DateTime @default(now())
+  bidLine   BidLine  @relation(fields: [bidLineId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bidLineId])
+  @@index([timestamp])
+}
+
+model Notification {
+  id      String   @id @default(cuid())
+  userId  String
+  type    String
+  title   String
+  message String
+  data    Json?
+  read    Boolean  @default(false)
+  sentAt  DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  bidLineId String?
+  action    String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  bidLine   BidLine? @relation(fields: [bidLineId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([bidLineId])
+  @@index([timestamp])
+}
+
+model BidPeriod {
+  id        String     @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  numCycles Int        @default(1)
+  bidLines  BidLine[]
+  schedules Schedule[]
+}
+
+model ShiftCode {
+  id             String          @id @default(cuid())
+  code           String          @unique
+  beginTime      String
+  endTime        String
+  category       String
+  hoursLength    Float
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  scheduleShifts ScheduleShift[]
+}
+
+model Schedule {
+  id             String          @id @default(cuid())
+  bidPeriodId    String
+  lineNumber     String
+  operationId    String
+  groupName      String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  bidLines       BidLine[]
+  bidPeriod      BidPeriod       @relation(fields: [bidPeriodId], references: [id], onDelete: Cascade)
+  operation      Operation       @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  scheduleShifts ScheduleShift[]
+
+  @@unique([bidPeriodId, operationId, lineNumber])
+  @@index([bidPeriodId])
+  @@index([operationId])
+}
+
+model ScheduleShift {
+  id          String     @id @default(cuid())
+  scheduleId  String
+  dayNumber   Int
+  date        DateTime
+  shiftCodeId String?
+  isHoliday   Boolean    @default(false)
+  notes       String?
+  schedule    Schedule   @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  shiftCode   ShiftCode? @relation(fields: [shiftCodeId], references: [id])
+
+  @@unique([scheduleId, dayNumber])
+  @@index([scheduleId])
+  @@index([date])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NotificationSettings {
+  id                        String   @id @default(cuid())
+  emailProvider             String   @default("smtp")
+  emailHost                 String?
+  emailPort                 Int?
+  emailSecure               Boolean? @default(false)
+  emailUser                 String?
+  emailPassword             String?
+  emailFromAddress          String?
+  emailFromName             String?
+  exchangeUrl               String?
+  exchangeUsername          String?
+  exchangePassword          String?
+  gmailClientId             String?
+  gmailClientSecret         String?
+  gmailRefreshToken         String?
+  resendApiKey              String?
+  resendFromEmail           String?
+  twilioEnabled             Boolean  @default(false)
+  twilioAccountSid          String?
+  twilioAuthToken           String?
+  twilioFromNumber          String?
+  notificationsEnabled      Boolean  @default(true)
+  emailNotificationsEnabled Boolean  @default(true)
+  smsNotificationsEnabled   Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model SeniorityList {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  operationId          String?
+  seniorityRank        Int       @unique
+  personalEmail        String?
+  workEmail            String?
+  personalPhone        String?
+  workPhone            String?
+  preferredContact     String?
+  currentBiddingStatus String    @default("waiting")
+  hasBid               Boolean   @default(false)
+  bidAt                DateTime?
+  uploadedAt           DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([seniorityRank])
+  @@index([currentBiddingStatus])
+}
+
+model NotificationTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String
+  subject   String
+  emailBody String
+  smsBody   String
+  variables String[]
+  isActive  Boolean  @default(true)
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+model NotificationHistory {
+  id             String    @id @default(cuid())
+  userId         String
+  recipientEmail String?
+  recipientPhone String?
+  type           String
+  deliveryMethod String
+  subject        String?
+  message        String
+  status         String
+  error          String?
+  sentBy         String
+  sentAt         DateTime  @default(now())
+  deliveredAt    DateTime?
+  metadata       Json?
+
+  @@index([userId])
+  @@index([sentBy])
+  @@index([status])
+  @@index([sentAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@index([expires])
+}
+
+model DayOffRequest {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  dates     DateTime[]
+  notes     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model MetricSettings {
+  id                      String   @id @default(cuid())
+  operationId             String?  @unique
+  showWeekends            Boolean  @default(true)
+  showSaturdays           Boolean  @default(true)
+  showSundays             Boolean  @default(true)
+  show5DayBlocks          Boolean  @default(true)
+  show4DayBlocks          Boolean  @default(true)
+  showHolidays            Boolean  @default(true)
+  show3DayBlocks          Boolean  @default(false)
+  show2DayBlocks          Boolean  @default(false)
+  show6DayBlocks          Boolean  @default(false)
+  showSingleDays          Boolean  @default(false)
+  showTotalSaturdays      Boolean  @default(false)
+  showTotalSundays        Boolean  @default(false)
+  showTotalDays           Boolean  @default(false)
+  showTotalMondays        Boolean  @default(false)
+  showTotalTuesdays       Boolean  @default(false)
+  showTotalWednesdays     Boolean  @default(false)
+  showTotalThursdays      Boolean  @default(false)
+  showTotalFridays        Boolean  @default(false)
+  showLongestStretch      Boolean  @default(false)
+  showFridayWeekendBlocks Boolean  @default(false)
+  showWeekdayBlocks       Boolean  @default(false)
+  showOffBlocks2day       Boolean  @default(false)
+  showOffBlocks3day       Boolean  @default(false)
+  showOffBlocks4day       Boolean  @default(false)
+  showOffBlocks5day       Boolean  @default(false)
+  showOffBlocks6day       Boolean  @default(false)
+  showOffBlocks7dayPlus   Boolean  @default(false)
+  showLongestOffStretch   Boolean  @default(false)
+  showShortestOffStretch  Boolean  @default(false)
+  metricOrder             String[] @default(["weekends", "saturdays", "sundays", "5dayBlocks", "4dayBlocks", "holidays"])
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([operationId])
+}
+
+enum Role {
+  SUPER_ADMIN
+  SUPERVISOR
+  OFFICER
+}
+
+enum LineStatus {
+  AVAILABLE
+  TAKEN
+  BLACKED_OUT
+}
+
+enum Language {
+  EN
+  FR
+}

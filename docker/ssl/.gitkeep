@@ -1,0 +1,9 @@
+# SSL certificates directory
+# Place your SSL certificates here:
+# - cert.pem (certificate file)  
+# - private.key (private key file)
+
+# For development, you can generate self-signed certificates:
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#   -keyout private.key -out cert.pem \
+#   -subj "/C=CA/ST=ON/L=Toronto/O=ShiftBidding/CN=localhost"

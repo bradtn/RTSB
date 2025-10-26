@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Real-Time Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .message {
+            background: #e3f2fd;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #2196f3;
+            font-family: monospace;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .clear { background: #6c757d; }
+        .test { background: #28a745; }
+        #messages {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔴 Real-Time WebSocket Test</h1>
+        <p>This page tests the WebSocket connection and real-time updates.</p>
+        
+        <div id="status" class="status disconnected">
+            ❌ Disconnected
+        </div>
+
+        <div>
+            <h3>Test Actions:</h3>
+            <button onclick="testBidLineUpdate()">🎯 Test Bid Line Update</button>
+            <button onclick="testNotification()">🔔 Test Notification</button>
+            <button onclick="subscribeToNotifications()">👤 Subscribe to Notifications</button>
+            <button class="clear" onclick="clearMessages()">🗑️ Clear Messages</button>
+        </div>
+
+        <h3>Real-Time Messages:</h3>
+        <div id="messages">
+            <div class="message">
+                <span class="timestamp">[System]</span> 
+                Waiting for WebSocket connection...
+            </div>
+        </div>
+
+        <div>
+            <h3>Connection Info:</h3>
+            <p><strong>WebSocket URL:</strong> <code id="wsUrl">ws://localhost:8001</code></p>
+            <p><strong>Connection Status:</strong> <span id="connStatus">Connecting...</span></p>
+            <p><strong>Client Count:</strong> <span id="clientCount">0</span></p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        const messages = document.getElementById('messages');
+        const status = document.getElementById('status');
+        const connStatus = document.getElementById('connStatus');
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            const wsUrl = 'ws://localhost:8001';
+            document.getElementById('wsUrl').textContent = wsUrl;
+            
+            socket = io(wsUrl, {
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                addMessage('✅ Connected to WebSocket server', 'success');
+                status.className = 'status connected';
+                status.innerHTML = '✅ Connected';
+                connStatus.textContent = 'Connected';
+                updateClientCount();
+            });
+
+            socket.on('disconnect', () => {
+                addMessage('❌ Disconnected from WebSocket server', 'error');
+                status.className = 'status disconnected';
+                status.innerHTML = '❌ Disconnected';
+                connStatus.textContent = 'Disconnected';
+            });
+
+            socket.on('bidLineUpdate', (data) => {
+                addMessage(`📋 Bid Line Update: Line ${data.lineNumber} is now ${data.status}`, 'update', data);
+            });
+
+            socket.on('notification', (data) => {
+                addMessage(`🔔 Notification: ${data.message}`, 'notification', data);
+            });
+
+            socket.on('connect_error', (error) => {
+                addMessage(`❌ Connection Error: ${error.message}`, 'error');
+            });
+        }
+
+        function addMessage(text, type = 'info', data = null) {
+            const div = document.createElement('div');
+            div.className = 'message';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            let content = `<span class="timestamp">[${timestamp}]</span> ${text}`;
+            
+            if (data) {
+                content += `<br><pre style="margin:5px 0; font-size:0.8em;">${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            div.innerHTML = content;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function updateClientCount() {
+            fetch('http://localhost:8001/health')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('clientCount').textContent = data.connectedClients;
+                })
+                .catch(error => {
+                    console.error('Failed to get client count:', error);
+                });
+        }
+
+        function testBidLineUpdate() {
+            const testData = {
+                bidLineId: 'test-' + Math.random().toString(36).substr(2, 9),
+                lineNumber: Math.floor(Math.random() * 999).toString().padStart(3, '0'),
+                status: 'TAKEN',
+                takenBy: 'Test User ' + Math.floor(Math.random() * 100),
+                takenAt: new Date().toISOString()
+            };
+            
+            socket.emit('bidLineUpdate', testData);
+            addMessage('📤 Sent test bid line update', 'sent', testData);
+        }
+
+        function testNotification() {
+            const testData = {
+                type: 'LINE_TAKEN',
+                title: 'Test Notification',
+                message: 'This is a test notification message',
+                timestamp: new Date().toISOString()
+            };
+            
+            socket.emit('notification', testData);
+            addMessage('📤 Sent test notification', 'sent', testData);
+        }
+
+        function subscribeToNotifications() {
+            const userId = 'test-user-' + Math.random().toString(36).substr(2, 9);
+            socket.emit('subscribeToNotifications', userId);
+            addMessage(`👤 Subscribed to notifications for user: ${userId}`, 'info');
+        }
+
+        function clearMessages() {
+            messages.innerHTML = '<div class="message"><span class="timestamp">[System]</span> Messages cleared</div>';
+        }
+
+        // Initialize on page load
+        initWebSocket();
+        
+        // Update client count every 5 seconds
+        setInterval(updateClientCount, 5000);
+    </script>
+</body>
+</html>
