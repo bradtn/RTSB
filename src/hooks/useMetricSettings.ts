@@ -39,6 +39,14 @@ export const useMetricSettings = ({ selectedOperation }: UseMetricSettingsProps)
           showLongestStretch: false,
           showFridayWeekendBlocks: false,
           showWeekdayBlocks: false,
+          showOffBlocks2day: false,
+          showOffBlocks3day: false,
+          showOffBlocks4day: false,
+          showOffBlocks5day: false,
+          showOffBlocks6day: false,
+          showOffBlocks7dayPlus: false,
+          showLongestOffStretch: false,
+          showShortestOffStretch: false,
         };
       }
       const data = await res.json();

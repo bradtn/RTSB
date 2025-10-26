@@ -170,6 +170,14 @@ export interface MetricSettings {
   showLongestStretch: boolean;
   showFridayWeekendBlocks: boolean;
   showWeekdayBlocks: boolean;
+  showOffBlocks2day: boolean;
+  showOffBlocks3day: boolean;
+  showOffBlocks4day: boolean;
+  showOffBlocks5day: boolean;
+  showOffBlocks6day: boolean;
+  showOffBlocks7dayPlus: boolean;
+  showLongestOffStretch: boolean;
+  showShortestOffStretch: boolean;
 }
 
 export type CategoryFilterMode = 'OR' | 'AND';
@@ -250,6 +258,14 @@ export interface BidLine {
     longestStretch: number;
     fridayWeekendBlocks: number;
     weekdayBlocks: number;
+    offBlocks2day: number;
+    offBlocks3day: number;
+    offBlocks4day: number;
+    offBlocks5day: number;
+    offBlocks6day: number;
+    offBlocks7dayPlus: number;
+    longestOffStretch: number;
+    shortestOffStretch: number;
   };
 }
 

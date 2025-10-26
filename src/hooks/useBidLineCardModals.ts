@@ -10,7 +10,7 @@ interface ModalState {
 }
 
 interface SelectedMetric {
-  type: 'weekends' | 'saturdays' | 'sundays' | 'fiveDayBlocks' | 'fourDayBlocks' | 'sixDayBlocks' | 'threeDayBlocks' | 'twoDayBlocks' | 'singleDays' | 'holidays' | 'totalSaturdays' | 'totalSundays' | 'totalMondays' | 'totalTuesdays' | 'totalWednesdays' | 'totalThursdays' | 'totalFridays' | 'totalDays' | 'longestStretch' | 'fridayWeekendBlocks' | 'weekdayBlocks';
+  type: string;
   value: number | string;
 }
 

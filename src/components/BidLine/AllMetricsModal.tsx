@@ -814,8 +814,18 @@ export default function AllMetricsModal({
               </h3>
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                 <ScheduleCalendar
-                  schedule={bidLine.schedule || bidLine}
-                  bidPeriod={bidLine.bidPeriod}
+                  schedule={
+                    bidLine.schedule?.scheduleShifts
+                      ? { scheduleShifts: bidLine.schedule.scheduleShifts }
+                      : bidLine.scheduleShifts
+                        ? { scheduleShifts: bidLine.scheduleShifts }
+                        : undefined
+                  }
+                  bidPeriod={bidLine.bidPeriod ? {
+                    startDate: new Date(bidLine.bidPeriod.startDate),
+                    endDate: new Date(bidLine.bidPeriod.endDate),
+                    numCycles: bidLine.bidPeriod.numCycles
+                  } : undefined}
                   compact={true}
                   className="bg-white dark:bg-gray-800"
                 />

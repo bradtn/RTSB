@@ -25,7 +25,30 @@ interface MetricSettings {
   showSundays: boolean;
   show5DayBlocks: boolean;
   show4DayBlocks: boolean;
+  show3DayBlocks: boolean;
+  show2DayBlocks: boolean;
+  show6DayBlocks: boolean;
+  showSingleDays: boolean;
   showHolidays: boolean;
+  showTotalSaturdays: boolean;
+  showTotalSundays: boolean;
+  showTotalDays: boolean;
+  showTotalMondays: boolean;
+  showTotalTuesdays: boolean;
+  showTotalWednesdays: boolean;
+  showTotalThursdays: boolean;
+  showTotalFridays: boolean;
+  showLongestStretch: boolean;
+  showFridayWeekendBlocks: boolean;
+  showWeekdayBlocks: boolean;
+  showOffBlocks2day: boolean;
+  showOffBlocks3day: boolean;
+  showOffBlocks4day: boolean;
+  showOffBlocks5day: boolean;
+  showOffBlocks6day: boolean;
+  showOffBlocks7dayPlus: boolean;
+  showLongestOffStretch: boolean;
+  showShortestOffStretch: boolean;
 }
 
 interface BidLineCardProps {
@@ -87,7 +110,40 @@ interface BidLineCardProps {
       sundaysOn: number;
       blocks5day: number;
       blocks4day: number;
+      blocks3day: number;
+      blocks2day: number;
+      blocks6day: number;
+      singleDays: number;
+      holidaysWorking: number;
+      holidaysOff: number;
       shiftPattern: string;
+      totalSaturdays: number;
+      totalSaturdaysInPeriod: number;
+      totalSundays: number;
+      totalSundaysInPeriod: number;
+      totalDaysWorked: number;
+      totalDaysInPeriod: number;
+      totalMondays: number;
+      totalMondaysInPeriod: number;
+      totalTuesdays: number;
+      totalTuesdaysInPeriod: number;
+      totalWednesdays: number;
+      totalWednesdaysInPeriod: number;
+      totalThursdays: number;
+      totalThursdaysInPeriod: number;
+      totalFridays: number;
+      totalFridaysInPeriod: number;
+      longestStretch: number;
+      fridayWeekendBlocks: number;
+      weekdayBlocks: number;
+      offBlocks2day: number;
+      offBlocks3day: number;
+      offBlocks4day: number;
+      offBlocks5day: number;
+      offBlocks6day: number;
+      offBlocks7dayPlus: number;
+      longestOffStretch: number;
+      shortestOffStretch: number;
     };
   };
   translations: {
@@ -225,7 +281,30 @@ export default function BidLineCard({ bidLine, translations, onFavoriteToggle, o
     showSundays: true,
     show5DayBlocks: true,
     show4DayBlocks: true,
+    show3DayBlocks: false,
+    show2DayBlocks: false,
+    show6DayBlocks: false,
+    showSingleDays: false,
     showHolidays: true,
+    showTotalSaturdays: false,
+    showTotalSundays: false,
+    showTotalDays: false,
+    showTotalMondays: false,
+    showTotalTuesdays: false,
+    showTotalWednesdays: false,
+    showTotalThursdays: false,
+    showTotalFridays: false,
+    showLongestStretch: false,
+    showFridayWeekendBlocks: false,
+    showWeekdayBlocks: false,
+    showOffBlocks2day: false,
+    showOffBlocks3day: false,
+    showOffBlocks4day: false,
+    showOffBlocks5day: false,
+    showOffBlocks6day: false,
+    showOffBlocks7dayPlus: false,
+    showLongestOffStretch: false,
+    showShortestOffStretch: false,
   };
   
   // Debug logging to check what settings are being used
@@ -318,7 +397,7 @@ export default function BidLineCard({ bidLine, translations, onFavoriteToggle, o
 
   const handleMetricClick = (
     e: React.MouseEvent,
-    type: 'weekends' | 'saturdays' | 'sundays' | 'fiveDayBlocks' | 'fourDayBlocks' | 'holidays',
+    type: string,
     value: number | string
   ) => {
     e.preventDefault();

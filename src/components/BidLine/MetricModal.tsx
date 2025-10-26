@@ -9,7 +9,7 @@ import { getHolidaysForPeriod, HolidayFilters } from '@/utils/holidays';
 interface MetricModalProps {
   isOpen: boolean;
   onClose: () => void;
-  metricType: 'weekends' | 'saturdays' | 'sundays' | 'fiveDayBlocks' | 'fourDayBlocks' | 'sixDayBlocks' | 'threeDayBlocks' | 'twoDayBlocks' | 'singleDays' | 'holidays' | 'totalSaturdays' | 'totalSundays' | 'totalMondays' | 'totalTuesdays' | 'totalWednesdays' | 'totalThursdays' | 'totalFridays' | 'totalDays' | 'longestStretch' | 'fridayWeekendBlocks' | 'weekdayBlocks' | 'offBlocks2day' | 'offBlocks3day' | 'offBlocks4day' | 'offBlocks5day' | 'offBlocks6day' | 'offBlocks7dayPlus' | 'longestOffStretch' | 'shortestOffStretch';
+  metricType: string;
   metricValue: number | string;
   bidLine: {
     id: string;
@@ -601,8 +601,8 @@ export default function MetricModal({
 
   if (!mounted || !isOpen) return null;
 
-  const config = getMetricConfig()[metricType];
-  const IconComponent = config.icon;
+  const config = getMetricConfig()[metricType as keyof ReturnType<typeof getMetricConfig>];
+  const IconComponent = config?.icon;
   
   const getColorClasses = (color: string) => {
     const colors = {
